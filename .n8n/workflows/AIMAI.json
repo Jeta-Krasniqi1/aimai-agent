@@ -1,0 +1,392 @@
+{
+  "name": "AIMAI",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "subtitle": "Start a chat. We're here to help you 24/7."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        272
+      ],
+      "id": "e377a9d0-cbb0-40e1-86fc-89946878ee3c",
+      "name": "When chat message received",
+      "webhookId": "55398e46-a1bf-4b3c-9e24-5f250a8ae4e1"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are AIMAI, a smart career assistant designed to help undergraduate and high school students make informed decisions about their future careers. Your primary goal is to guide students toward meaningful career paths in computer science and related fields by providing personalized roadmaps, skills guidance, and AI-generated CVs.\n\nYour responsibilities include:\n\nCareer Exploration: Ask students about their interests, passions, and future goals. Recommend career options that align with their preferences and background.\n\nRoadmap Generator: Use the Open Skills API to identify essential skills for any given job title (e.g., \"software engineer\", \"data scientist\") and generate step-by-step learning paths. Break these into beginner, intermediate, and advanced levels using the student’s current skill level.\n\nCV Generator: Generate tailored CVs in a professional format using only information you already know about the student (education, interests, skills, projects, job goals). Your goal is to create CVs that are accurate, editable, and competitive for internships or job applications.\n\nMentor and Opportunity Matcher: Match students with mentors, internships, workshops, or job opportunities based on their goals, skill gaps, and interests.\n\nSave & Recall Info: You may save any relevant user information (e.g., goals, selected careers, known skills) into the database. Recall this information during future interactions to offer consistent, personalized support.\n\nYour tone should be helpful, encouraging, and practical. Provide answers that are clear, actionable, and aligned with the user’s progress.\nExtract ONLY the job title from this message, without explanations. \nuse the tools to get cv tempantes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        176
+      ],
+      "id": "c1a2d39f-d806-4809-b382-37f25e978004",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1,
+      "position": [
+        32,
+        400
+      ],
+      "id": "36003b39-ba49-4b51-ba3d-b1e9c1f00d28",
+      "name": "AWS Bedrock Chat Model",
+      "credentials": {
+        "aws": {
+          "id": "3RUEQH33gV7PeyW6",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        400
+      ],
+      "id": "072fc6eb-72f4-4270-aaf4-1e2e1ed75dfd",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ai-agent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        80
+      ],
+      "id": "62ffdfc8-1e75-4cf7-9ebb-6ca1d29f4626",
+      "name": "Webhook",
+      "webhookId": "a4001bf3-1aee-4ac5-a8a4-6eddaf24d2b8"
+    },
+    {
+      "parameters": {
+        "jsCode": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"workflowId\": \"VD8o9zgaFbbnHQK6\",\n        \"options\": {}\n      },\n      \"id\": \"ExecuteWorkflowNode\",\n      \"name\": \"Call Second Workflow\",\n      \"type\": \"n8n-nodes-base.executeWorkflow\",\n      \"typeVersion\": 1,\n      \"position\": [400, 300]\n    }\n  ],\n  \"connections\": {}\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        400
+      ],
+      "id": "c65f9fde-a46c-4246-942f-ed28007d75e8",
+      "name": "Code Tool"
+    },
+    {
+      "parameters": {
+        "bucketName": "cv-templatess",
+        "fileKey": "cv_template.docx"
+      },
+      "id": "7e7bf30b-7f36-495f-8998-8202c87193ce",
+      "name": "AWS S3",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 1,
+      "position": [
+        672,
+        240
+      ],
+      "credentials": {
+        "aws": {
+          "id": "uTBiFDzY8Om9iYiw",
+          "name": "AWS account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return items.map(item => {\n  const binaryKey = Object.keys(item.binary || {})[0];\n  const binaryData = item.binary[binaryKey].data;\n\n  return {\n    json: {\n      filename: item.binary[binaryKey].fileName,\n      mimetype: item.binary[binaryKey].mimeType,\n      fileBase64: binaryData\n    }\n  };\n});"
+      },
+      "id": "e3750b2c-f186-400c-b9bd-5bdb0a92e6b0",
+      "name": "Convert DOCX to Base64",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        880,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "model": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        464
+      ],
+      "id": "31bdf6f6-9134-4d73-829b-61aa672f3e76",
+      "name": "AWS Bedrock Chat Model1",
+      "credentials": {
+        "aws": {
+          "id": "3RUEQH33gV7PeyW6",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.fileBase64 }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "take the cv in json then change the placeholders with real info about the user and then pass it as json"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        272
+      ],
+      "id": "edbdfa1c-9010-47a3-a1d9-7e936d4830f2",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        224
+      ],
+      "id": "4893ba6b-d71d-4345-8097-91ecc4f2ceed",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        480
+      ],
+      "id": "37ccd68e-b33b-4e32-9636-9350985c7bec",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "const buffer = Buffer.from($json.fileBase64, 'base64');\n\nreturn {\n  json: {},\n  binary: {\n    data: {\n      data: buffer.toString('base64'),\n      fileName: $json.fileName || \"cv_generated.docx\",\n      mimeType: \"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"\n    }\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        272
+      ],
+      "id": "5c043c67-a9c8-4e13-980f-236a821957e1",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": {
+          "__rl": true,
+          "value": "user_skills",
+          "mode": "list",
+          "cachedResultName": "user_skills"
+        },
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "sort": {
+          "values": [
+            {
+              "column": "user_id",
+              "direction": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.5,
+      "position": [
+        368,
+        528
+      ],
+      "id": "49053f2c-3b60-4bfd-b77e-fbc619a8fbd4",
+      "name": "Select rows from a table in MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "PHhFLFWCQsWa9Vd5",
+          "name": "MySQL account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS S3": {
+      "main": [
+        [
+          {
+            "node": "Convert DOCX to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert DOCX to Base64": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AWS S3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table in MySQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3b1d01fc-1123-4fdd-863f-32dfd1f22e34",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb7baac8d836e7c8a891bf7f3bd2c8ead923592a627d476c5d26d9d8030a0879"
+  },
+  "id": "VD8o9zgaFbbnHQK6",
+  "tags": []
+}
