@@ -67,7 +67,6 @@
     },
     {
       "parameters": {
-        "httpMethod": "POST",
         "path": "ai-agent",
         "options": {}
       },
@@ -382,7 +381,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "3b1d01fc-1123-4fdd-863f-32dfd1f22e34",
+  "versionId": "0444f297-d051-4f14-bd83-82f06393c5ed",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "eb7baac8d836e7c8a891bf7f3bd2c8ead923592a627d476c5d26d9d8030a0879"
