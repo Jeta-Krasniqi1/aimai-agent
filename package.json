@@ -4,7 +4,7 @@
   "description": "Self-hosted n8n AI agent on Render",
   "main": "index.js",
   "scripts": {
-    "start": "node ./node_modules/n8n/bin/n8n start --port $PORT"
+    "start": "n8n start --tunnel --port $PORT"
   },
   "dependencies": {
     "n8n": "^1.80.0"
